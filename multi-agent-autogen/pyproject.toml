@@ -1,0 +1,13 @@
+[project]
+name = "document-intelligence"
+version = "0.1.0"
+description = "Multi-Agent Document Intelligence System"
+requires-python = ">=3.10"
+dependencies = [
+    "ag2[gemini]",
+    "fastapi",
+    "uvicorn",
+    "aiosqlite",
+    "python-dotenv",
+    "pydantic",
+]

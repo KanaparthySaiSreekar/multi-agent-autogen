@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Intelligence</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Document Intelligence</h1>
+            <p class="subtitle">Multi-Agent Analysis powered by AG2</p>
+        </header>
+
+        <main>
+            <section class="input-section">
+                <input type="text" id="doc-title" placeholder="Document title" />
+                <textarea id="doc-content" rows="10" placeholder="Paste your document text here (meeting transcript, legal draft, project brief...)"></textarea>
+                <button id="analyze-btn" onclick="submitDocument()">Analyze Document</button>
+            </section>
+
+            <section id="loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p>Agents are analyzing your document...</p>
+                <p class="agent-status">Summary Agent &rarr; Action Agent &rarr; Risk Agent</p>
+            </section>
+
+            <section id="results" class="results hidden">
+                <div class="card summary-card">
+                    <h2>Summary</h2>
+                    <p id="summary-text"></p>
+                    <h3>Key Decisions</h3>
+                    <ul id="decisions-list"></ul>
+                </div>
+
+                <div class="card actions-card">
+                    <h2>Action Items</h2>
+                    <div id="actions-list"></div>
+                </div>
+
+                <div class="card risks-card">
+                    <h2>Risks &amp; Open Issues</h2>
+                    <div id="risks-list"></div>
+                </div>
+            </section>
+
+            <section class="history-section">
+                <h2>Past Analyses</h2>
+                <div id="history-list"></div>
+            </section>
+        </main>
+    </div>
+    <script src="/app.js"></script>
+</body>
+</html>
