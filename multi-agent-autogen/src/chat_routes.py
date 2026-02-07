@@ -7,7 +7,7 @@ from fastapi.responses import StreamingResponse
 
 from src.chat_models import ChatRequest
 from src.database import get_db
-from src.orchestrator import analyze_document_streaming
+from src.orchestrator import route_message_streaming
 
 logger = logging.getLogger(__name__)
 chat_router = APIRouter(prefix="/api/chat")
@@ -76,8 +76,9 @@ async def chat_stream(req: ChatRequest):
         try:
             full_reply = ""
             payload = None
+            component = None
 
-            async for event in analyze_document_streaming(req.message):
+            async for event in route_message_streaming(req.message):
                 etype = event.get("type")
 
                 if etype == "status":
@@ -85,12 +86,13 @@ async def chat_stream(req: ChatRequest):
                 elif etype == "agent_done":
                     yield f"data: {json.dumps(event)}\n\n"
                 elif etype == "result":
-                    payload = event.get("payload", {})
+                    payload = event.get("payload")
                     full_reply = event.get("full_reply", "")
+                    component = event.get("component")
                     end_event = {
                         "type": "end",
                         "conversation_id": conversation_id,
-                        "component": "analysis_card",
+                        "component": component,
                         "payload": payload,
                         "full_reply": full_reply,
                     }
@@ -103,7 +105,7 @@ async def chat_stream(req: ChatRequest):
                 conversation_id,
                 "assistant",
                 content=full_reply or None,
-                component="analysis_card" if payload else None,
+                component=component,
                 payload=payload,
             )
         except Exception as e:

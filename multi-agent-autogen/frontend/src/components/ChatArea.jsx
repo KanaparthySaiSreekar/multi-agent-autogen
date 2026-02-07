@@ -46,10 +46,12 @@ export default function ChatArea({ chat, onMessageSent }) {
 
         {isStreaming && (
           <>
-            <AgentProgress
-              activeAgents={activeAgents}
-              currentAgent={currentAgent}
-            />
+            {(currentAgent || activeAgents.length > 0) && (
+              <AgentProgress
+                activeAgents={activeAgents}
+                currentAgent={currentAgent}
+              />
+            )}
             <TypingIndicator />
           </>
         )}

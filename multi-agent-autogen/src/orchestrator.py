@@ -2,7 +2,7 @@ import asyncio
 import json
 import logging
 
-from autogen import GroupChat, GroupChatManager, UserProxyAgent
+from autogen import AssistantAgent, GroupChat, GroupChatManager, UserProxyAgent
 
 from src.config import LLM_CONFIG
 from src.models import ActionItem, AnalysisResult, RiskItem
@@ -11,6 +11,79 @@ from src.agents.action_agent import create_action_agent
 from src.agents.risk_agent import create_risk_agent
 
 logger = logging.getLogger(__name__)
+
+
+async def _quick_llm_call(system_message: str, user_message: str) -> str:
+    """Make a one-shot LLM call using initiate_chat (proven pattern)."""
+    agent = AssistantAgent(
+        name="Helper",
+        system_message=system_message,
+        llm_config=LLM_CONFIG,
+        human_input_mode="NEVER",
+    )
+    user_proxy = UserProxyAgent(
+        name="Caller",
+        human_input_mode="NEVER",
+        max_consecutive_auto_reply=0,
+        code_execution_config=False,
+    )
+    chat_result = await asyncio.to_thread(
+        user_proxy.initiate_chat,
+        agent,
+        message=user_message,
+        max_turns=1,
+    )
+    # Extract reply from chat history (last message from the agent)
+    for msg in reversed(chat_result.chat_history):
+        if msg.get("name") == "Helper":
+            return msg.get("content", "")
+    return ""
+
+
+async def classify_intent(message: str) -> str:
+    """Classify whether the message needs document analysis or is casual conversation."""
+    system = (
+        "You are a message classifier for a document analysis system. "
+        "Determine if the user's message requires multi-agent document analysis "
+        "or is casual conversation.\n\n"
+        "Reply with ONLY one word:\n"
+        "- 'analysis' if the message contains substantial text (meeting notes, reports, "
+        "documents, articles, lengthy content) that should be analyzed for summaries, "
+        "action items, and risks.\n"
+        "- 'conversation' if the message is a greeting, question, casual chat, short request, "
+        "or anything that doesn't contain a document to analyze.\n\n"
+        "Reply with ONLY: analysis OR conversation"
+    )
+    reply = await _quick_llm_call(system, message)
+    return "analysis" if "analysis" in reply.strip().lower() else "conversation"
+
+
+async def simple_chat_streaming(message: str):
+    """Handle casual conversation with a direct LLM response."""
+    system = (
+        "You are a friendly assistant for a Document Intelligence system. "
+        "You help users with questions and casual conversation. "
+        "If the user greets you, greet them back warmly. "
+        "If they ask what you can do, explain that you can analyze documents, "
+        "meeting notes, and reports to extract summaries, action items, and risks. "
+        "They can paste or upload a document for analysis. "
+        "Keep responses concise and helpful."
+    )
+    reply = await _quick_llm_call(system, message)
+    yield {"type": "result", "component": None, "payload": None, "full_reply": reply}
+
+
+async def route_message_streaming(message: str):
+    """Classify user intent and route to the appropriate handler."""
+    intent = await classify_intent(message)
+    logger.info(f"Message classified as: {intent}")
+
+    if intent == "analysis":
+        async for event in analyze_document_streaming(message):
+            yield event
+    else:
+        async for event in simple_chat_streaming(message):
+            yield event
 
 
 def _extract_json(text: str) -> dict | list | None:
@@ -246,4 +319,4 @@ async def analyze_document_streaming(document_text: str):
     payload = result.model_dump()
     full_reply = payload.get("summary", "")
 
-    yield {"type": "result", "payload": payload, "full_reply": full_reply}
+    yield {"type": "result", "component": "analysis_card", "payload": payload, "full_reply": full_reply}
