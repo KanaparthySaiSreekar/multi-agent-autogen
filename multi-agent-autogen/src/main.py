@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from src.database import init_db
 from src.routes import router
+from src.chat_routes import chat_router
 
 logging.basicConfig(level=logging.INFO)
 
@@ -28,4 +29,5 @@ app.add_middleware(
 )
 
 app.include_router(router)
+app.include_router(chat_router)
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

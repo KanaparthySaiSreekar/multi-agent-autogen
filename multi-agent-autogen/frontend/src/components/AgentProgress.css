@@ -1,0 +1,81 @@
+.agent-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 0;
+  animation: fadeInUp 0.3s ease;
+}
+
+.agent-step-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.agent-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.agent-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  transition: all 0.3s;
+}
+
+.agent-step.active .agent-dot {
+  background: var(--color-primary);
+  color: #fff;
+  animation: pulse 1.5s infinite;
+}
+
+.agent-step.done .agent-dot {
+  background: var(--color-success);
+  color: #fff;
+}
+
+.agent-label {
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.agent-step.active .agent-label {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.agent-step.done .agent-label {
+  color: var(--color-success);
+}
+
+.agent-connector {
+  width: 40px;
+  height: 2px;
+  background: var(--color-border);
+  margin: 0 0.25rem;
+  margin-bottom: 1.2rem;
+  transition: background 0.3s;
+}
+
+.agent-connector.done {
+  background: var(--color-success);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(15, 52, 96, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(15, 52, 96, 0);
+  }
+}

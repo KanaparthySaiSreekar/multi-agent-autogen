@@ -10,4 +10,6 @@ dependencies = [
     "aiosqlite",
     "python-dotenv",
     "pydantic",
+    "pdfplumber",
+    "python-multipart",
 ]
