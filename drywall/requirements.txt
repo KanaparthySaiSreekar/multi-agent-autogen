@@ -1,0 +1,11 @@
+torch>=2.0
+torchvision>=0.15
+transformers>=4.35
+roboflow
+Pillow
+opencv-python
+numpy
+matplotlib
+scikit-learn
+pycocotools
+tqdm
